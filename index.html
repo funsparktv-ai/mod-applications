@@ -3,72 +3,698 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
   <title>Staff Applications</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Everything (styles + script) lives in this one file so a cached old copy
+       can never be mixed with new code. Only config.js is separate. -->
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #14151b;
+      --raised: #1b1d25;
+      --field: #0f1015;
+      --line: #262833;
+      --line-strong: #353846;
+      --text: #eceef3;
+      --muted: #9497a6;
+      --faint: #6b6e7d;
+      --accent: #5865f2;
+      --accent-hover: #4954d8;
+      --accent-soft: rgba(88, 101, 242, .14);
+      --error: #f2555a;
+      --ok: #3ba55d;
+      --warn: #f0b232;
+      --radius: 14px;
+    }
+
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image: linear-gradient(180deg, #161936 0, var(--bg) 420px);
+      background-repeat: no-repeat;
+      color: var(--text);
+      font: 15px/1.55 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 40px 16px 64px;
+    }
+
+    .shell { max-width: 680px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .top { text-align: center; margin-bottom: 26px; }
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 10px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #aab1ff;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0 0 8px; font-size: 32px; font-weight: 800; letter-spacing: -.025em; }
+    .lead { margin: 0 auto; max-width: 480px; color: var(--muted); }
+
+    /* ── Steps ── */
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 22px 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: 13px;
+      color: var(--faint);
+    }
+    .steps li { display: flex; align-items: center; gap: 8px; }
+    .steps li + li::before { content: ""; width: 22px; height: 1px; background: var(--line-strong); margin-right: 2px; }
+    .dot {
+      display: grid; place-items: center;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      font-size: 11px; font-weight: 700;
+    }
+    .steps li.active { color: var(--text); }
+    .steps li.active .dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .steps li.done .dot { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+
+    h2 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.01em; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .center { text-align: center; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      padding: 13px 18px;
+      border: 0; border-radius: 11px;
+      background: var(--accent);
+      color: #fff;
+      font: 600 15px Inter, system-ui, sans-serif;
+      cursor: pointer;
+      transition: background-color .12s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:focus-visible { outline: 2px solid #aab1ff; outline-offset: 2px; }
+    .btn:disabled { opacity: .65; cursor: progress; }
+    .btn svg { width: 22px; height: 22px; flex: none; }
+    .btn.ghost { background: var(--raised); border: 1px solid var(--line-strong); }
+    .btn.ghost:hover { background: #22242e; }
+    .link {
+      background: none; border: 0; padding: 4px 2px;
+      color: var(--muted); font: inherit; font-size: 13px;
+      cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+    }
+    .link:hover { color: var(--text); }
+
+    /* ── Login ── */
+    .login { display: grid; gap: 14px; text-align: center; }
+    .perks { display: grid; gap: 8px; margin: 4px 0 6px; padding: 0; list-style: none; text-align: left; }
+    .perks li {
+      display: flex; gap: 10px; align-items: center;
+      padding: 10px 12px;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted); font-size: 14px;
+    }
+    .perks b { color: var(--text); font-weight: 600; }
+
+    /* ── Loading ── */
+    .loading { display: grid; justify-items: center; gap: 14px; padding: 26px 0; color: var(--muted); }
+    .spinner {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 3px solid var(--line-strong);
+      border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Signed-in bar ── */
+    .me {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      margin-bottom: 22px;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .me img { width: 40px; height: 40px; border-radius: 50%; background: var(--raised); flex: none; }
+    .me-text { min-width: 0; }
+    .me-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .me-id { color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .me .link { margin-left: auto; flex: none; }
+
+    /* ── Positions ── */
+    .positions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .position {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+      padding: 16px;
+      text-align: left;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+      transition: border-color .12s, background-color .12s;
+    }
+    .position:hover { border-color: var(--accent); background: #12131a; }
+    .position:focus-visible { outline: 2px solid #aab1ff; outline-offset: 2px; }
+    .position:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .position-icon {
+      display: grid; place-items: center;
+      width: 40px; height: 40px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      background: var(--raised);
+      font-size: 21px;
+    }
+    .position-name { font-weight: 700; font-size: 16px; }
+    .position-blurb { color: var(--muted); font-size: 13.5px; }
+    .badge {
+      margin-top: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(240, 178, 50, .13);
+      color: var(--warn);
+      font-size: 12px; font-weight: 600;
+    }
+    .position.cooling { opacity: .55; }
+    .position.cooling .position-blurb::after { content: " · Applied recently"; color: var(--faint); }
+
+    /* ── Form ── */
+    .chosen {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 22px; padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .chosen .position-icon { margin: 0; }
+    .chosen-label { color: var(--faint); font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; }
+    .chosen-name { font-weight: 700; font-size: 18px; }
+    .chosen .link { margin-left: auto; }
+
+    .q { margin-bottom: 20px; }
+    .q > label { display: flex; gap: 8px; font-weight: 500; margin-bottom: 8px; }
+    .q-num { color: var(--faint); font-variant-numeric: tabular-nums; }
+    .req { color: var(--error); }
+    input[type=text], textarea, select {
+      width: 100%;
+      padding: 11px 13px;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      font: inherit;
+    }
+    select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+    textarea { min-height: 104px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .invalid { border-color: var(--error) !important; }
+    .count { text-align: right; color: var(--faint); font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+    .tick {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .tick input { margin: 3px 0 0; width: 17px; height: 17px; accent-color: var(--accent); flex: none; }
+    .tick.invalid { border-color: var(--error); }
+    .tick.req-box { border-color: rgba(240, 178, 50, .35); }
+
+    .submit-row { margin-top: 8px; }
+    .error { color: var(--error); min-height: 1.2em; margin: 12px 0 0; text-align: center; font-size: 14px; }
+
+    /* ── Done ── */
+    .done { text-align: center; padding: 10px 0; }
+    .done-icon {
+      width: 68px; height: 68px;
+      margin: 0 auto 14px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: rgba(59, 165, 93, .14);
+      color: var(--ok);
+      font-size: 32px; font-weight: 800;
+      animation: pop .35s ease-out;
+    }
+    @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+    .done .actions { display: grid; gap: 10px; margin-top: 22px; }
+
+    .notice {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(242, 85, 90, .1);
+      border: 1px solid rgba(242, 85, 90, .3);
+      color: #ffb3b5;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    code { background: var(--field); padding: 2px 6px; border-radius: 6px; }
+    .foot { margin-top: 18px; text-align: center; color: var(--faint); font-size: 12px; }
+
+    @media (max-width: 560px) {
+      body { padding: 24px 16px 48px; }
+      .card { padding: 22px 18px; }
+      h1 { font-size: 26px; }
+      .positions { grid-template-columns: 1fr; }
+      .steps .label { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <main class="card">
-    <header>
+  <div class="shell">
+    <header class="top">
       <p class="eyebrow" id="server-name">Server</p>
       <h1>Staff Applications</h1>
-      <p class="sub">Log in with Discord, pick the position you want, and answer a few questions. Staff will review it and the bot will DM you the result.</p>
+      <p class="lead">Log in with Discord, pick a position and answer a few questions. The bot will DM you when staff decide.</p>
+      <ol class="steps" id="steps">
+        <li data-step="1"><span class="dot">1</span><span class="label">Log in</span></li>
+        <li data-step="2"><span class="dot">2</span><span class="label">Position</span></li>
+        <li data-step="3"><span class="dot">3</span><span class="label">Questions</span></li>
+      </ol>
     </header>
 
-    <section id="login-view" hidden>
-      <button id="login-btn" class="btn discord">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18a19.9 19.9 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.6-3.6-13.6ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
-        Log in with Discord
-      </button>
-      <p class="fine">We only read your username and ID. Nothing is posted as you.</p>
-    </section>
+    <main class="card">
+      <section id="loading-view" class="loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <div id="loading-text">Loading…</div>
+      </section>
 
-    <div class="me" id="me-bar" hidden>
-      <img id="me-avatar" alt="">
-      <div>
-        <div id="me-name" class="me-name"></div>
-        <div id="me-id" class="me-id"></div>
-      </div>
-      <button id="logout-btn" class="link" type="button">Not you?</button>
-    </div>
+      <section id="login-view" class="login" hidden>
+        <div id="login-notice" class="notice" hidden></div>
+        <ul class="perks">
+          <li>🔒 <span>We only read your <b>username and ID</b>. Nothing is posted as you.</span></li>
+          <li>📬 <span>Keep your <b>DMs open</b> so the bot can send you the result.</span></li>
+        </ul>
+        <button id="login-btn" class="btn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18a19.9 19.9 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.6-3.6-13.6ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
+          Log in with Discord
+        </button>
+      </section>
 
-    <section id="pick-view" hidden>
-      <h2 class="step">What are you applying for?</h2>
-      <div id="positions" class="positions"></div>
-    </section>
-
-    <section id="form-view" hidden>
-      <div class="chosen">
-        <span id="chosen-icon" class="chosen-icon"></span>
-        <div>
-          <div class="chosen-label">Applying for</div>
-          <div id="chosen-name" class="chosen-name"></div>
+      <div id="me-bar" class="me" hidden>
+        <img id="me-avatar" alt="" width="40" height="40">
+        <div class="me-text">
+          <div id="me-name" class="me-name"></div>
+          <div id="me-id" class="me-id"></div>
         </div>
-        <button id="change-btn" class="link" type="button">Change</button>
+        <button id="logout-btn" class="link" type="button">Log out</button>
       </div>
-      <form id="app-form" novalidate>
-        <div id="questions"></div>
-        <label class="check">
-          <input type="checkbox" id="agree" required>
-          <span>I understand that lying on this application means it gets declined.</span>
-        </label>
-        <button class="btn primary" id="submit-btn" type="submit">Submit application</button>
-        <p id="form-error" class="error" role="alert"></p>
-      </form>
-    </section>
 
-    <section id="done-view" hidden>
-      <div class="done-icon">✓</div>
-      <h2>Application sent</h2>
-      <p class="sub">Staff will look at it soon. Keep your DMs open for this server so the bot can message you the result.</p>
-      <button id="another-btn" class="link" type="button">Apply for another position</button>
-    </section>
+      <section id="pick-view" hidden>
+        <h2>What are you applying for?</h2>
+        <p class="muted small" style="margin:0">Pick one. You can apply for more than one position.</p>
+        <div id="positions" class="positions"></div>
+      </section>
 
-    <p id="setup-warning" class="error" hidden>This site isn't set up yet: fill in <code>config.js</code>.</p>
-  </main>
+      <section id="form-view" hidden>
+        <div class="chosen">
+          <span id="chosen-icon" class="position-icon"></span>
+          <div>
+            <div class="chosen-label">Applying for</div>
+            <div id="chosen-name" class="chosen-name"></div>
+          </div>
+          <button id="change-btn" class="link" type="button">Change</button>
+        </div>
+        <form id="app-form" novalidate>
+          <div id="questions"></div>
+          <label class="tick q">
+            <input type="checkbox" id="agree">
+            <span>I answered honestly. I understand lying on this application means it gets declined.</span>
+          </label>
+          <div class="submit-row">
+            <button class="btn" id="submit-btn" type="submit">Submit application</button>
+          </div>
+          <p id="form-error" class="error" role="alert"></p>
+        </form>
+      </section>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+      <section id="done-view" class="done" hidden>
+        <div class="done-icon">✓</div>
+        <h2 id="done-title">Application sent</h2>
+        <p class="muted">Staff will review it soon. The bot will DM you whether you've been accepted or declined.</p>
+        <div class="actions">
+          <button id="another-btn" class="btn ghost" type="button">Apply for another position</button>
+          <button id="finish-btn" class="link" type="button">I'm done, log me out</button>
+        </div>
+      </section>
+
+      <section id="setup-view" hidden>
+        <p class="notice">This site isn't set up yet: fill in <code>config.js</code>.</p>
+      </section>
+    </main>
+    <p class="foot">Applications go straight to the staff team on Discord.</p>
+  </div>
+
+  <script src="config.js?v=4"></script>
+  <script>
+  (() => {
+    const cfg = window.APP_CONFIG;
+    const $ = (id) => document.getElementById(id);
+    const VIEWS = ["loading-view", "login-view", "pick-view", "form-view", "done-view", "setup-view"];
+    const STEP_OF = { "login-view": 1, "pick-view": 2, "form-view": 3, "done-view": 4 };
+
+    // Must match the Redirect in the Developer Portal exactly, so drop "index.html".
+    const redirectUri = location.origin + location.pathname.replace(/index\.html$/, "");
+    const cooldownKey = (pos) => `modapp_last_submit_${pos}`;
+    const local = {
+      get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+    };
+    const session = {
+      get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+      set(k, v) { try { sessionStorage.setItem(k, v); } catch {} },
+      del(k) { try { sessionStorage.removeItem(k); } catch {} },
+    };
+
+    // Login lives only in memory: refreshing or reopening the page means logging in again.
+    let token = null;
+    let me = null;
+    let position = null;
+    let fields = {};
+
+    function show(id) {
+      for (const v of VIEWS) $(v).hidden = v !== id;
+      $("me-bar").hidden = !(me && (id === "pick-view" || id === "form-view"));
+      const step = STEP_OF[id] || 0;
+      for (const li of $("steps").children) {
+        const n = Number(li.dataset.step);
+        li.classList.toggle("active", n === step);
+        li.classList.toggle("done", n < step);
+      }
+      if (id !== "loading-view") window.scrollTo(0, 0);
+    }
+
+    function loginNotice(text) {
+      $("login-notice").textContent = text;
+      $("login-notice").hidden = !text;
+    }
+
+    function logout() {
+      token = null;
+      me = null;
+      show("login-view");
+    }
+
+    $("server-name").textContent = cfg.serverName;
+    document.title = `${cfg.serverName} · Staff Applications`;
+
+    if (!cfg.discordClientId || cfg.discordClientId.startsWith("PASTE") ||
+        !cfg.webhookUrl || cfg.webhookUrl.startsWith("PASTE")) {
+      show("setup-view");
+      return;
+    }
+
+    // ── Discord login (OAuth2 implicit grant, "identify" scope only) ────────
+    $("login-btn").onclick = () => {
+      const state = crypto.getRandomValues(new Uint32Array(4)).join("");
+      session.set("modapp_state", state);
+      const url = new URL("https://discord.com/oauth2/authorize");
+      url.search = new URLSearchParams({
+        client_id: cfg.discordClientId,
+        response_type: "token",
+        redirect_uri: redirectUri,
+        scope: "identify",
+        state,
+        prompt: "consent", // always show Discord's authorise screen
+      });
+      $("login-btn").disabled = true;
+      location.href = url;
+    };
+    $("logout-btn").onclick = logout;
+    $("finish-btn").onclick = logout;
+    $("change-btn").onclick = () => { renderPositions(); show("pick-view"); };
+    $("another-btn").onclick = () => { renderPositions(); show("pick-view"); };
+
+    async function start() {
+      const hash = new URLSearchParams(location.hash.slice(1));
+      const expected = session.get("modapp_state");
+      session.del("modapp_state");
+      if (location.hash) history.replaceState(null, "", redirectUri); // keep the token out of the address bar
+
+      if (hash.get("error")) {
+        loginNotice(hash.get("error") === "access_denied"
+          ? "You cancelled the Discord login. Click below to try again."
+          : "Discord login failed. Please try again.");
+        return show("login-view");
+      }
+      if (!hash.get("access_token")) return show("login-view");
+      if (!expected || hash.get("state") !== expected) {
+        loginNotice("That login link expired. Please log in again.");
+        return show("login-view");
+      }
+
+      token = hash.get("access_token");
+      $("loading-text").textContent = "Signing you in…";
+      show("loading-view");
+      try {
+        const res = await fetch("https://discord.com/api/v10/users/@me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(res.status);
+        me = await res.json();
+      } catch {
+        token = null;
+        loginNotice("Couldn't load your Discord account. Please log in again.");
+        return show("login-view");
+      }
+      const avatar = me.avatar
+        ? `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.png?size=80`
+        : `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(me.id) >> 22n) % 6}.png`;
+      $("me-avatar").src = avatar;
+      $("me-name").textContent = me.global_name || me.username;
+      $("me-id").textContent = `@${me.username}`;
+      renderPositions();
+      show("pick-view");
+    }
+
+    // ── Position picker ─────────────────────────────────────────────────────
+    const cooldownLeft = (pos) => {
+      const last = Number(local.get(cooldownKey(pos.id)) || 0);
+      return last + cfg.cooldownSeconds * 1000 - Date.now();
+    };
+
+    function el(tag, cls, text) {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+
+    function renderPositions() {
+      const list = $("positions");
+      list.replaceChildren();
+      for (const pos of cfg.positions) {
+        const btn = el("button", "position");
+        btn.type = "button";
+        btn.append(
+          el("span", "position-icon", pos.icon || "⭐"),
+          el("span", "position-name", pos.name),
+          el("span", "position-blurb", pos.blurb || ""),
+        );
+        if (pos.requirement) btn.append(el("span", "badge", pos.requirement));
+        if (cooldownLeft(pos) > 0) btn.classList.add("cooling");
+        btn.onclick = () => openForm(pos);
+        list.append(btn);
+      }
+    }
+
+    // ── Form for the chosen position ────────────────────────────────────────
+    const questionsFor = (pos) => [
+      ...(cfg.commonQuestions || []),
+      ...(pos.questions || []),
+      ...(cfg.closingQuestions || []),
+    ];
+
+    function buildQuestion(q, number) {
+      const wrap = el("div", "q");
+      let input;
+
+      if (q.type === "confirm") {
+        const label = el("label", "tick" + (q.required ? " req-box" : ""));
+        input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = `q-${q.id}`;
+        input.onchange = () => label.classList.remove("invalid");
+        const text = el("span", null, q.label);
+        if (q.required) text.append(el("span", "req", " *"));
+        label.append(input, text);
+        wrap.append(label);
+        return { wrap, input };
+      }
+
+      const label = el("label");
+      label.htmlFor = `q-${q.id}`;
+      label.append(el("span", "q-num", `${number}.`), el("span", null, q.label));
+      if (q.required) label.append(el("span", "req", "*"));
+      wrap.append(label);
+
+      if (q.type === "choice") {
+        input = document.createElement("select");
+        input.append(new Option("Pick one…", ""));
+        for (const o of q.options) input.append(new Option(o, o));
+      } else {
+        input = document.createElement(q.type === "long" ? "textarea" : "input");
+        if (q.type !== "long") input.type = "text";
+        if (q.max) input.maxLength = q.max;
+      }
+      input.id = `q-${q.id}`;
+      input.addEventListener("input", () => input.classList.remove("invalid"));
+      wrap.append(input);
+
+      if (q.type === "long" && q.max) {
+        const count = el("div", "count", `0/${q.max}`);
+        input.addEventListener("input", () => (count.textContent = `${input.value.length}/${q.max}`));
+        wrap.append(count);
+      }
+      return { wrap, input };
+    }
+
+    function openForm(pos) {
+      position = pos;
+      $("chosen-icon").textContent = pos.icon || "⭐";
+      $("chosen-name").textContent = pos.name;
+      $("form-error").textContent = "";
+      $("agree").checked = false;
+      fields = {};
+      const frag = document.createDocumentFragment();
+      let n = 0;
+      for (const q of questionsFor(pos)) {
+        const { wrap, input } = buildQuestion(q, q.type === "confirm" ? n : ++n);
+        frag.append(wrap);
+        fields[q.id] = input;
+      }
+      $("questions").replaceChildren(frag);
+      show("form-view");
+      const left = cooldownLeft(pos);
+      if (left > 0) {
+        $("form-error").textContent = `You applied for ${pos.name} recently. You can apply again in ${Math.ceil(left / 60000)} min.`;
+      }
+    }
+
+    // ── Submit → Discord webhook ────────────────────────────────────────────
+    const clip = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const answerOf = (q) => {
+      const input = fields[q.id];
+      if (q.type === "confirm") return input.checked ? "✅ Yes" : "❌ No";
+      return input.value.trim();
+    };
+
+    $("app-form").onsubmit = async (e) => {
+      e.preventDefault();
+      $("form-error").textContent = "";
+      const questions = questionsFor(position);
+
+      let firstBad = null;
+      for (const q of questions) {
+        const input = fields[q.id];
+        const missing = q.type === "confirm" ? !input.checked : !input.value.trim();
+        if (q.required && missing) {
+          (q.type === "confirm" ? input.closest(".tick") : input).classList.add("invalid");
+          firstBad ??= input;
+        }
+      }
+      if (firstBad) {
+        firstBad.scrollIntoView({ block: "center" });
+        firstBad.focus({ preventScroll: true });
+        $("form-error").textContent = "Please answer every required question and tick any required boxes.";
+        return;
+      }
+      if (!$("agree").checked) {
+        $("agree").closest(".tick").classList.add("invalid");
+        $("agree").onchange = () => $("agree").closest(".tick").classList.remove("invalid");
+        $("form-error").textContent = "Tick the box to confirm your answers are honest.";
+        return;
+      }
+      const left = cooldownLeft(position);
+      if (left > 0) {
+        $("form-error").textContent = `You already applied for ${position.name}. Try again in ${Math.ceil(left / 60000)} min.`;
+        return;
+      }
+
+      const created = Math.floor(Number((BigInt(me.id) >> 22n) + 1420070400000n) / 1000);
+      const embed = {
+        title: `${clip(position.name, 80)} application`,
+        description:
+          `**Applicant:** <@${me.id}> (${clip(me.username, 40)})\n` +
+          `**Position:** ${position.icon || ""} ${position.name}\n` +
+          `**Account created:** <t:${created}:R>`,
+        color: 0x5865f2,
+        thumbnail: { url: $("me-avatar").src },
+        fields: questions.slice(0, 23).map((q) => ({
+          name: clip(q.label, 256),
+          value: clip(answerOf(q) || "—", 1000),
+        })),
+        // The bot reads this line to know who to DM and which role it was. Don't change the format.
+        footer: { text: `applicant:${me.id} · position:${position.id}` },
+        timestamp: new Date().toISOString(),
+      };
+
+      // Discord caps an embed at 6000 characters; leave ~1200 for the bot's
+      // status line and decline reason. Trim the longest answer until it fits.
+      const size = () =>
+        embed.title.length + embed.description.length + embed.footer.text.length +
+        embed.fields.reduce((n, f) => n + f.name.length + f.value.length, 0);
+      while (size() > 4700) {
+        const longest = embed.fields.reduce((a, b) => (b.value.length > a.value.length ? b : a));
+        longest.value = clip(longest.value, longest.value.length - 50);
+      }
+
+      const btn = $("submit-btn");
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      try {
+        const res = await fetch(cfg.webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: "Staff Applications",
+            embeds: [embed],
+            allowed_mentions: { parse: [] },
+          }),
+        });
+        if (!res.ok) throw new Error(`Discord said ${res.status}`);
+        local.set(cooldownKey(position.id), String(Date.now()));
+        $("done-title").textContent = `${position.name} application sent`;
+        show("done-view");
+      } catch (err) {
+        $("form-error").textContent = `Couldn't send your application (${err.message}). Try again in a minute.`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit application";
+      }
+    };
+
+    start();
+  })();
+  </script>
 </body>
 </html>

@@ -1,11 +1,14 @@
 (() => {
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
+  const VIEWS = ["login-view", "pick-view", "form-view", "done-view"];
   const show = (id) => {
-    for (const v of ["login-view", "form-view", "done-view"]) $(v).hidden = v !== id;
+    for (const v of VIEWS) $(v).hidden = v !== id;
+    $("me-bar").hidden = !me || id === "login-view" || id === "done-view";
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const TOKEN_KEY = "modapp_token";
-  const COOLDOWN_KEY = "modapp_last_submit";
+  const cooldownKey = (pos) => `modapp_last_submit_${pos}`;
   // Must match the Redirect in the Developer Portal exactly, so drop "index.html".
   const redirectUri = location.origin + location.pathname.replace(/index\.html$/, "");
 
@@ -16,12 +19,16 @@
   };
 
   $("server-name").textContent = cfg.serverName;
-  document.title = `${cfg.serverName} · Mod Applications`;
+  document.title = `${cfg.serverName} · Staff Applications`;
 
   if (cfg.discordClientId.startsWith("PASTE") || cfg.webhookUrl.startsWith("PASTE")) {
     $("setup-warning").hidden = false;
     return;
   }
+
+  let me = null;
+  let position = null;
+  let fields = {};
 
   // ── Discord login (OAuth2 implicit grant, "identify" scope only) ──────────
   const hash = new URLSearchParams(location.hash.slice(1));
@@ -50,10 +57,11 @@
 
   $("logout-btn").onclick = () => {
     store.del(TOKEN_KEY);
+    me = null;
     show("login-view");
   };
-
-  let me = null;
+  $("change-btn").onclick = () => show("pick-view");
+  $("another-btn").onclick = () => (me ? show("pick-view") : show("login-view"));
 
   async function loadUser() {
     const token = store.get(TOKEN_KEY);
@@ -74,16 +82,63 @@
     $("me-avatar").src = avatar;
     $("me-name").textContent = me.global_name || me.username;
     $("me-id").textContent = `@${me.username} · ${me.id}`;
-    show("form-view");
+    show("pick-view");
   }
 
-  // ── Build the questions from config.js ────────────────────────────────────
-  const fields = {};
-  for (const q of cfg.questions) {
+  // ── Position picker ───────────────────────────────────────────────────────
+  for (const pos of cfg.positions) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "position";
+    const icon = document.createElement("span");
+    icon.className = "position-icon";
+    icon.textContent = pos.icon || "⭐";
+    const text = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "position-name";
+    name.textContent = pos.name;
+    const blurb = document.createElement("div");
+    blurb.className = "position-blurb";
+    blurb.textContent = pos.blurb || "";
+    text.append(name, blurb);
+    if (pos.requirement) {
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = pos.requirement;
+      text.append(badge);
+    }
+    btn.append(icon, text);
+    btn.onclick = () => openForm(pos);
+    $("positions").append(btn);
+  }
+
+  // ── Build the form for the chosen position ────────────────────────────────
+  const questionsFor = (pos) => [
+    ...(cfg.commonQuestions || []),
+    ...(pos.questions || []),
+    ...(cfg.closingQuestions || []),
+  ];
+
+  function buildQuestion(q) {
     const wrap = document.createElement("div");
     wrap.className = "q";
     const label = document.createElement("label");
     label.htmlFor = `q-${q.id}`;
+    let input;
+
+    if (q.type === "confirm") {
+      wrap.classList.add("confirm");
+      input = document.createElement("input");
+      input.type = "checkbox";
+      input.id = `q-${q.id}`;
+      input.onchange = () => wrap.classList.remove("invalid-box");
+      const span = document.createElement("span");
+      span.textContent = q.label;
+      label.append(input, span);
+      wrap.append(label);
+      return { wrap, input };
+    }
+
     label.textContent = q.label;
     if (q.required) {
       const star = document.createElement("span");
@@ -93,7 +148,6 @@
     }
     wrap.append(label);
 
-    let input;
     if (q.type === "choice") {
       input = document.createElement("select");
       input.append(new Option("Pick one…", ""));
@@ -115,28 +169,51 @@
       update();
       wrap.append(count);
     }
-    $("questions").append(wrap);
-    fields[q.id] = input;
+    return { wrap, input };
+  }
+
+  function openForm(pos) {
+    position = pos;
+    $("chosen-icon").textContent = pos.icon || "⭐";
+    $("chosen-name").textContent = pos.name;
+    $("questions").replaceChildren();
+    $("form-error").textContent = "";
+    $("agree").checked = false;
+    fields = {};
+    for (const q of questionsFor(pos)) {
+      const { wrap, input } = buildQuestion(q);
+      $("questions").append(wrap);
+      fields[q.id] = input;
+    }
+    show("form-view");
   }
 
   // ── Submit → Discord webhook ──────────────────────────────────────────────
   const clip = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+  const answerOf = (q) => {
+    const el = fields[q.id];
+    if (q.type === "confirm") return el.checked ? "✅ Yes" : "❌ No";
+    return el.value.trim();
+  };
 
   $("app-form").onsubmit = async (e) => {
     e.preventDefault();
     $("form-error").textContent = "";
+    const questions = questionsFor(position);
 
     let firstBad = null;
-    for (const q of cfg.questions) {
+    for (const q of questions) {
       const el = fields[q.id];
-      if (q.required && !el.value.trim()) {
-        el.classList.add("invalid");
+      const missing = q.type === "confirm" ? !el.checked : !el.value.trim();
+      if (q.required && missing) {
+        if (q.type === "confirm") el.closest(".q").classList.add("invalid-box");
+        else el.classList.add("invalid");
         firstBad ??= el;
       }
     }
     if (firstBad) {
       firstBad.focus();
-      $("form-error").textContent = "Please answer every required question.";
+      $("form-error").textContent = "Please answer every required question and tick any required boxes.";
       return;
     }
     if (!$("agree").checked) {
@@ -144,24 +221,29 @@
       return;
     }
 
-    const last = Number(store.get(COOLDOWN_KEY, localStorage) || 0);
+    const last = Number(store.get(cooldownKey(position.id), localStorage) || 0);
     const wait = last + cfg.cooldownSeconds * 1000 - Date.now();
     if (wait > 0) {
-      $("form-error").textContent = `You already applied. Try again in ${Math.ceil(wait / 60000)} min.`;
+      $("form-error").textContent =
+        `You already applied for ${position.name}. Try again in ${Math.ceil(wait / 60000)} min.`;
       return;
     }
 
+    const created = Math.floor(Number((BigInt(me.id) >> 22n) + 1420070400000n) / 1000);
     const embed = {
-      title: "Mod application",
-      description: `**Applicant:** <@${me.id}> (${clip(me.username, 40)})\n**Account created:** <t:${Math.floor(Number((BigInt(me.id) >> 22n) + 1420070400000n) / 1000)}:R>`,
+      title: `${clip(position.name, 80)} application`,
+      description:
+        `**Applicant:** <@${me.id}> (${clip(me.username, 40)})\n` +
+        `**Position:** ${position.icon || ""} ${position.name}\n` +
+        `**Account created:** <t:${created}:R>`,
       color: 0x5865f2,
       thumbnail: { url: $("me-avatar").src },
-      fields: cfg.questions.slice(0, 23).map((q) => ({
+      fields: questions.slice(0, 23).map((q) => ({
         name: clip(q.label, 256),
-        value: clip(fields[q.id].value.trim() || "—", 1000),
+        value: clip(answerOf(q) || "—", 1000),
       })),
-      // The bot reads this line to know who to DM. Don't change the format.
-      footer: { text: `applicant:${me.id}` },
+      // The bot reads this line to know who to DM and which role it was. Don't change the format.
+      footer: { text: `applicant:${me.id} · position:${position.id}` },
       timestamp: new Date().toISOString(),
     };
 
@@ -183,14 +265,13 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: "Mod Applications",
+          username: "Staff Applications",
           embeds: [embed],
           allowed_mentions: { parse: [] },
         }),
       });
       if (!res.ok) throw new Error(`Discord said ${res.status}`);
-      store.set(COOLDOWN_KEY, String(Date.now()), localStorage);
-      store.del(TOKEN_KEY);
+      store.set(cooldownKey(position.id), String(Date.now()), localStorage);
       show("done-view");
     } catch (err) {
       $("form-error").textContent = `Couldn't send your application (${err.message}). Try again in a minute.`;

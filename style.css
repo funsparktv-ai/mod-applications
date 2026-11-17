@@ -132,3 +132,51 @@ code { background: var(--field); padding: 2px 6px; border-radius: 6px; }
   .card { padding: 26px 20px; }
   h1 { font-size: 23px; }
 }
+
+/* ── Position picker ─────────────────────────────────────────────────────── */
+.step { font-size: 17px; margin: 0 0 14px; }
+.positions { display: grid; gap: 10px; }
+.position {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+}
+.position:hover, .position:focus-visible { border-color: var(--accent); outline: none; transform: translateY(-1px); }
+.position-icon { font-size: 24px; line-height: 1.2; }
+.position-name { font-weight: 600; }
+.position-blurb { color: var(--muted); font-size: 14px; }
+.badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(250, 166, 26, .14);
+  color: #f5b041;
+  font-size: 12px;
+  font-weight: 600;
+}
+.chosen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.chosen-icon { font-size: 28px; }
+.chosen-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.chosen-name { font-weight: 700; font-size: 18px; }
+.q.confirm label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.q.confirm input { margin-top: 4px; accent-color: var(--accent); width: auto; }
+.q.confirm.invalid-box label { color: var(--error); }
+#another-btn { margin: 18px auto 0; display: block; }

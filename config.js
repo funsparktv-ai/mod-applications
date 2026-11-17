@@ -5,10 +5,10 @@ window.APP_CONFIG = {
 
   // Discord Developer Portal → your bot's application → General Information → Application ID.
   // Also add this site's exact URL under OAuth2 → Redirects exactly: https://funsparktv-ai.github.io/mod-applications/
-  discordClientId: "PASTE_APPLICATION_ID_HERE",
+  discordClientId: "1558142757053267968",
 
   // Server Settings → Integrations → Webhooks → New Webhook (in your applications channel) → Copy URL.
-  webhookUrl: "PASTE_WEBHOOK_URL_HERE",
+  webhookUrl: "https://discord.com/api/webhooks/1572201883378917386/oVBBnwkntueVH5yWJ0SryjCgIXI8zlmlz5q-oE0C5q7Gn4j3yia_fIOsUPO1WymJffWx",
 
   // Seconds a person must wait before submitting again from the same browser.
   cooldownSeconds: 3600,

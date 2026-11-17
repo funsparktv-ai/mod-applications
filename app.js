@@ -6,7 +6,8 @@
   };
   const TOKEN_KEY = "modapp_token";
   const COOLDOWN_KEY = "modapp_last_submit";
-  const redirectUri = location.origin + location.pathname;
+  // Must match the Redirect in the Developer Portal exactly, so drop "index.html".
+  const redirectUri = location.origin + location.pathname.replace(/index\.html$/, "");
 
   const store = {
     get(k, area = sessionStorage) { try { return area.getItem(k); } catch { return null; } },

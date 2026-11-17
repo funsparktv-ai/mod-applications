@@ -262,6 +262,7 @@
       animation: pop .35s ease-out;
     }
     @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+    .closed-icon { background: rgba(240, 178, 50, .13); font-size: 28px; }
     .done .actions { display: grid; gap: 10px; margin-top: 22px; }
 
     .notice {
@@ -294,7 +295,7 @@
     <header class="top">
       <p class="eyebrow" id="server-name">Server</p>
       <h1>Staff Applications</h1>
-      <p class="lead">Log in with Discord, pick a position and answer a few questions. The bot will DM you when staff decide.</p>
+      <p class="lead" id="lead">Log in with Discord, pick a position and answer a few questions. The bot will DM you when staff decide.</p>
       <ol class="steps" id="steps">
         <li data-step="1"><span class="dot">1</span><span class="label">Log in</span></li>
         <li data-step="2"><span class="dot">2</span><span class="label">Position</span></li>
@@ -367,6 +368,12 @@
         </div>
       </section>
 
+      <section id="closed-view" class="done" hidden>
+        <div class="done-icon closed-icon">🔒</div>
+        <h2>Applications are closed for now</h2>
+        <p class="muted" id="closed-message">Check back later. We'll announce in the server when they open again.</p>
+      </section>
+
       <section id="setup-view" hidden>
         <p class="notice">This site isn't set up yet: fill in <code>config.js</code>.</p>
       </section>
@@ -374,12 +381,12 @@
     <p class="foot">Applications go straight to the staff team on Discord.</p>
   </div>
 
-  <script src="config.js?v=4"></script>
+  <script src="config.js?v=5"></script>
   <script>
   (() => {
     const cfg = window.APP_CONFIG;
     const $ = (id) => document.getElementById(id);
-    const VIEWS = ["loading-view", "login-view", "pick-view", "form-view", "done-view", "setup-view"];
+    const VIEWS = ["loading-view", "login-view", "pick-view", "form-view", "done-view", "setup-view", "closed-view"];
     const STEP_OF = { "login-view": 1, "pick-view": 2, "form-view": 3, "done-view": 4 };
 
     // Must match the Redirect in the Developer Portal exactly, so drop "index.html".
@@ -426,6 +433,15 @@
 
     $("server-name").textContent = cfg.serverName;
     document.title = `${cfg.serverName} · Staff Applications`;
+
+    if (cfg.applicationsOpen === false) {
+      $("steps").hidden = true;
+      document.querySelector(".foot").hidden = true;
+      $("lead").textContent = "We're not taking staff applications right now.";
+      if (cfg.closedMessage) $("closed-message").textContent = cfg.closedMessage;
+      show("closed-view");
+      return;
+    }
 
     if (!cfg.discordClientId || cfg.discordClientId.startsWith("PASTE") ||
         !cfg.webhookUrl || cfg.webhookUrl.startsWith("PASTE")) {

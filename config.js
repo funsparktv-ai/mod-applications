@@ -3,6 +3,12 @@ window.APP_CONFIG = {
   // Shown in the page header.
   serverName: "LARP Scrims",
 
+  // false = the site shows "Applications are closed for now" and nobody can apply.
+  // Set back to true to reopen.
+  applicationsOpen: false,
+  // Optional line under the "closed" heading.
+  closedMessage: "Check back later. We'll announce in the server when they open again.",
+
   // Discord Developer Portal → your bot's application → General Information → Application ID.
   // Also add this site's exact URL under OAuth2 → Redirects:
   // exactly: https://funsparktv-ai.github.io/mod-applications/

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mod Applications</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card">
+    <header>
+      <p class="eyebrow" id="server-name">Server</p>
+      <h1>Moderator Application</h1>
+      <p class="sub">Log in with Discord so we know who you are, answer the questions, and staff will review it. You'll get a DM from the bot with the result.</p>
+    </header>
+
+    <section id="login-view" hidden>
+      <button id="login-btn" class="btn discord">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18a19.9 19.9 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.1-.8-9.6-3.6-13.6ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
+        Log in with Discord
+      </button>
+      <p class="fine">We only read your username and ID. Nothing is posted as you.</p>
+    </section>
+
+    <section id="form-view" hidden>
+      <div class="me">
+        <img id="me-avatar" alt="">
+        <div>
+          <div id="me-name" class="me-name"></div>
+          <div id="me-id" class="me-id"></div>
+        </div>
+        <button id="logout-btn" class="link" type="button">Not you?</button>
+      </div>
+      <form id="app-form" novalidate>
+        <div id="questions"></div>
+        <label class="check">
+          <input type="checkbox" id="agree" required>
+          <span>I understand that lying on this application means it gets declined.</span>
+        </label>
+        <button class="btn primary" id="submit-btn" type="submit">Submit application</button>
+        <p id="form-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="done-view" hidden>
+      <div class="done-icon">✓</div>
+      <h2>Application sent</h2>
+      <p class="sub">Staff will look at it soon. Keep your DMs open for this server so the bot can message you the result.</p>
+    </section>
+
+    <p id="setup-warning" class="error" hidden>This site isn't set up yet: fill in <code>config.js</code>.</p>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

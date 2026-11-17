@@ -24,14 +24,15 @@ in that channel (and **Manage Roles** above the mod role if you use `MOD_ROLE_ID
 ### 3. Discord login
 Discord Developer Portal → your bot's application:
 - **General Information**: copy the **Application ID**.
-- **OAuth2 → Redirects**: add your site URL exactly, e.g. `https://YOURNAME.github.io/mod-applications/`
+- **OAuth2 → Redirects**: add exactly `https://funsparktv-ai.github.io/mod-applications/`
   (including the trailing slash).
 
 ### 4. `config.js`
 Paste the Application ID and webhook URL, set your server name, and edit the questions.
 
-### 5. Publish on GitHub Pages
-Push this folder to a GitHub repo, then **Settings → Pages → Deploy from a branch → main / root**.
+### 5. Publish
+Live at https://funsparktv-ai.github.io/mod-applications/ (repo `funsparktv-ai/mod-applications`,
+Pages serves the `main` branch). After editing `config.js`, commit and push; it updates in about a minute.
 
 ## Who can review
 Anyone the bot counts as Co-Owner or higher: Administrator / Manage Server, the configured Co-Owner

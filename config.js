@@ -4,7 +4,7 @@ window.APP_CONFIG = {
   serverName: "LARP Scrims",
 
   // Discord Developer Portal → your bot's application → General Information → Application ID.
-  // Also add this site's exact URL under OAuth2 → Redirects (e.g. https://yourname.github.io/mod-applications/).
+  // Also add this site's exact URL under OAuth2 → Redirects exactly: https://funsparktv-ai.github.io/mod-applications/
   discordClientId: "PASTE_APPLICATION_ID_HERE",
 
   // Server Settings → Integrations → Webhooks → New Webhook (in your applications channel) → Copy URL.

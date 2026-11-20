@@ -381,7 +381,7 @@
     <p class="foot">Applications go straight to the staff team on Discord.</p>
   </div>
 
-  <script src="config.js?v=5"></script>
+  <script src="config.js?v=6"></script>
   <script>
   (() => {
     const cfg = window.APP_CONFIG;
@@ -434,13 +434,42 @@
     $("server-name").textContent = cfg.serverName;
     document.title = `${cfg.serverName} · Staff Applications`;
 
-    if (cfg.applicationsOpen === false) {
+    function showClosed() {
       $("steps").hidden = true;
       document.querySelector(".foot").hidden = true;
       $("lead").textContent = "We're not taking staff applications right now.";
       if (cfg.closedMessage) $("closed-message").textContent = cfg.closedMessage;
       show("closed-view");
-      return;
+    }
+
+    // Which positions are open is set from Discord with /applications and
+    // published as status.json. Read it fresh from GitHub (no cache), fall back
+    // to this site's copy, then to applicationsOpen in config.js.
+    async function loadOpenPositions() {
+      const sources = [];
+      if (cfg.statusRepo) {
+        sources.push([`https://api.github.com/repos/${cfg.statusRepo}/contents/status.json?ref=main`,
+                      { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }]);
+      }
+      sources.push([`status.json?t=${Date.now()}`, { cache: "no-store" }]);
+      for (const [url, opts] of sources) {
+        try {
+          const res = await fetch(url, opts);
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (Array.isArray(data.open)) return data.open;
+        } catch {}
+      }
+      return cfg.applicationsOpen ? cfg.positions.map((p) => p.id) : [];
+    }
+
+    async function boot() {
+      $("loading-text").textContent = "Checking which positions are open…";
+      show("loading-view");
+      const open = new Set(await loadOpenPositions());
+      cfg.positions = cfg.positions.filter((p) => open.has(p.id));
+      if (!cfg.positions.length) return showClosed();
+      start();
     }
 
     if (!cfg.discordClientId || cfg.discordClientId.startsWith("PASTE") ||
@@ -709,7 +738,7 @@
       }
     };
 
-    start();
+    boot();
   })();
   </script>
 </body>

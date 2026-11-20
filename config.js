@@ -3,8 +3,10 @@ window.APP_CONFIG = {
   // Shown in the page header.
   serverName: "LARP Scrims",
 
-  // false = the site shows "Applications are closed for now" and nobody can apply.
-  // Set back to true to reopen.
+  // Which positions are open is controlled from Discord with /applications
+  // (main server only). The bot writes status.json in this repo:
+  statusRepo: "funsparktv-ai/mod-applications",
+  // Fallback only, used if status.json can't be loaded: true = all open, false = closed.
   applicationsOpen: false,
   // Optional line under the "closed" heading.
   closedMessage: "Check back later. We'll announce in the server when they open again.",

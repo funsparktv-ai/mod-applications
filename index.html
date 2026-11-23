@@ -689,7 +689,8 @@
       const embed = {
         title: `${clip(position.name, 80)} application`,
         description:
-          `**Applicant:** <@${me.id}> (${clip(me.username, 40)})\n` +
+          // Name first: Discord sometimes shows embed mentions as raw <@id>, so the name stays readable.
+          `**Applicant:** ${clip(String(me.global_name || me.username).replace(/[*_~`|>\\]/g, "\\$&"), 40)} (<@${me.id}>) · @${clip(me.username, 32)}\n` +
           `**Position:** ${position.icon || ""} ${position.name}\n` +
           `**Account created:** <t:${created}:R>`,
         color: 0x5865f2,
